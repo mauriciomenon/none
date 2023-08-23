@@ -16,8 +16,12 @@ data = [
 table_str = tabulate(data, headers="firstrow", tablefmt="grid")
 font = ImageFont.load_default()
 
-table_width = font.getsize(max(table_str.split("\n"), key=len))[0]
-table_height = font.getsize(table_str)[1] * len(table_str.split("\n"))
+# Calculating the maximum width and height of cells
+cell_width = max(font.getbbox(cell)[2] for row in data for cell in row)
+cell_height = font.getbbox(table_str.splitlines()[0])[3]
+
+table_width = cell_width * len(data[0])
+table_height = cell_height * len(data)
 
 image = Image.new("RGBA", (table_width, table_height), (255, 255, 255, 255))
 draw = ImageDraw.Draw(image)
