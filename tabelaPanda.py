@@ -13,7 +13,12 @@ data = [
     ["AZUL", "8:00", "SDU", "14:15", "IGU"]
 ]
 
-table_str = tabulate(data, headers="firstrow", tablefmt="grid")
+# Increase cell width by 50%
+data[0] = [f'{cell:^{int(len(cell) * 1.5)}}' for cell in data[0]]
+for i in range(1, len(data)):
+    data[i] = [f'{cell:^{int(len(cell) * 1.5)}}' if cell not in ("IGU", "SDU") else cell for cell in data[i]]
+
+table_str = tabulate(data, headers="firstrow", tablefmt="plain")
 font_size = 20
 font_path = "/Library/Fonts/Arial.ttf"  # Change this to the correct path on your system
 font = ImageFont.truetype(font_path, font_size)
@@ -31,7 +36,12 @@ y_position = 0
 for row in data:
     x_position = 0
     for cell, width in zip(row, cell_widths):
-        draw.text((x_position, y_position), cell, fill="black", font=font)
+        color = "black"
+        if cell == "IGU":
+            color = "darkblue"
+        elif cell == "SDU":
+            color = "darkred"
+        draw.text((x_position, y_position), cell, fill=color, font=font)
         x_position += width
     y_position += cell_height
 
