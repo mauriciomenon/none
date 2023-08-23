@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{array}
+\usepackage[table]{xcolor}
+
+\begin{document}
+
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\rowcolor{gray!20}
+\textbf{Companhia} & \textbf{Saída} & \textbf{Origem} & \textbf{Chegada} & \textbf{Destino} \\
+\hline
+LATAM & 9:50 & IGU & 12:25 & SDU \\
+LATAM & 9:50 & IGU & 13:20 & SDU \\
+AZUL & 9:55 & IGU & 13:55 & SDU \\
+AZUL & 11:05 & IGU & 16:20 & SDU \\
+GOL & 11:40 & IGU & 15:15 & SDU \\
+\hline
+\rowcolor{gray!20}
+\multicolumn{5}{|c|}{Outro Agrupamento} \\
+\hline
+LATAM & 10:55 & SDU & 15:00 & IGU \\
+GOL & 10:30 & SDU & 14:40 & IGU \\
+AZUL & 8:00 & SDU & 14:15 & IGU \\
+\hline
+\end{tabular}
+\caption{Horários de Voos}
+\label{tab:voos}
+\end{table}
+
+\end{document}

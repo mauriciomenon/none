@@ -13,12 +13,12 @@ data = [
     ["AZUL", "8:00", "SDU", "14:15", "IGU"]
 ]
 
-# Increase cell width by 50%
+# Increase cell width by 50% and centralize
 data[0] = [f'{cell:^{int(len(cell) * 1.5)}}' for cell in data[0]]
-for i in range(1, len(data)):
+for i in range(1, len(data) - 2):
     data[i] = [f'{cell:^{int(len(cell) * 1.5)}}' if cell not in ("IGU", "SDU") else cell for cell in data[i]]
 
-table_str = tabulate(data, headers="firstrow", tablefmt="plain")
+table_str = tabulate(data, tablefmt="plain")
 font_size = 20
 font_path = "/Library/Fonts/Arial.ttf"  # Change this to the correct path on your system
 font = ImageFont.truetype(font_path, font_size)
@@ -33,16 +33,22 @@ image = Image.new("RGBA", (table_width, table_height), (255, 255, 255, 255))
 draw = ImageDraw.Draw(image)
 
 y_position = 0
-for row in data:
+for i, row in enumerate(data):
     x_position = 0
-    for cell, width in zip(row, cell_widths):
+    for j, cell in enumerate(row):
         color = "black"
         if cell == "IGU":
             color = "darkblue"
         elif cell == "SDU":
             color = "darkred"
-        draw.text((x_position, y_position), cell, fill=color, font=font)
-        x_position += width
+        alignment = "center"
+        if i == 0 or i == len(data) - 1 or i == len(data) - 2:
+            alignment = "center"
+        bbox = draw.textbbox((x_position, y_position), cell, font=font, align=alignment)
+        x_offset = (cell_widths[j] - (bbox[2] - bbox[0])) // 2
+        y_offset = (cell_height - (bbox[3] - bbox[1])) // 2
+        draw.text((x_position + x_offset, y_position + y_offset), cell, fill=color, font=font, align=alignment)
+        x_position += cell_widths[j]
     y_position += cell_height
 
 # Desenhar linhas horizontais
