@@ -164,51 +164,71 @@ class FileRenamer(QWidget):
             with open(pdf_path, 'rb') as f:
                 reader = PyPDF2.PdfReader(f)
                 total_pages = len(reader.pages)
-
-                # Primeira Parte: Seu código original
                 text_page_2 = reader.pages[1].extract_text()
                 text_page_3 = reader.pages[2].extract_text()
+                text_page_4 = reader.pages[3].extract_text()
+                
+                # Primeira Parte: Abordagem mais específica
+                # 1A  Extração por regex Packt
                 name = re.search(r'(.+?)\n', text_page_2)
                 isbn = re.search(r'ISBN (\d{3}-\d{1,5}-\d{1,7}-\d{1,7}-\d{1})', text_page_3)
                 year = re.search(r'Copyright \u00A9 (\d{4})', text_page_3)
                 publisher = re.search(r'Published by (.+?)\n', text_page_3)
+                author = re.search(r'([^\n]+)\nBIRMINGHAM - MUMBAI', text_page_2)
                 info['Title'] = name.group(1) if name else 'Unknown'
                 info['ISBN'] = isbn.group(1) if isbn else 'Unknown'
                 info['Year'] = year.group(1) if year else 'Unknown'
                 info['Publisher'] = publisher.group(1) if publisher else 'Unknown'
-                # Busca de Autor baseada na localização relativa
-                # Regex para extrair os autores
-                author_pattern = r'([^BIRMINGHAM - MUMBAI]+)\nBIRMINGHAM - MUMBAI'
-                author_match = re.search(author_pattern, text_page_2)
-
-                if author_match:
-                    authors = author_match.group(1).strip()
-                    print(f"Autores encontrados: {authors}")  # Isso irá imprimir "Autores encontrados: Shrey Mehrotra Akash Grade"
-                else:
-                    print("Autores não encontrados.")
-
-                # Segunda Parte: Abordagem mais genérica
-                for i in itertools.chain(range(min(5, total_pages)), range(-3, 0, 1)):  # 5 primeiras e 3 últimas páginas
-                    page = reader.pages[i]
-                    text = page.extract_text()
-                    # Busca por autor
-                    if info['Author'] == 'Unknown':
-                        author_match = re.search(r'(?:[Aa]uthor|Written\sby|By)[:\s]*([^\n\r]+)', text)
-                        if author_match:
-                            info['Author'] = author_match.group(1).strip()
-
-                # Terceira Parte: busca por dados no próprio arquivo (similar ao que foi feito anteriormente)
-                #metadata = reader.getDocumentInfo()
-                #if metadata:
-                #    info['Title'] = metadata.get('/Title', info['Title'])
-                #    info['Author'] = metadata.get('/Author', info['Author'])
-                #    info['Year'] = metadata.get('/CreationDate', info['Year'])[:4]
-                #    info['Publisher'] = metadata.get('/Producer', info['Publisher'])
+                info['Author'] = author.group(1) if author else 'Unknown'
+                
+                if info['Publisher'] == 'Packt Publishing Ltd.':
+                    return info
+                
+                # Lógica para a editora O'Reilly (método 1b)
+                name = re.search(r'^([^\n]+)', text_page_4)
+                print(f"nome: {name}")
+                isbn = re.search(r'ISBN[:\s-]*?(\d{3}-\d{1,5}-\d{1,7}-\d{1,7}-\d{1})', text_page_4)
+                print(f"isbn: {isbn}")
+                year = re.search(r'Copyright \u00A9 (\d{4})', text_page_4)
+                print(f"ano: {year}")
+                publisher = re.search(r'published by ([\w\s’]+) Media,', text_page_4, re.IGNORECASE)
+                print(f"editora: {publisher}")
+                author = re.search(r'\b\d{4}\b\s+([\w\s]+)[.,]', text_page_4)
+                print(f"author: {author}")
+                info['Title'] = name.group(1) if name else 'Unknown'
+                info['ISBN'] = isbn.group(1) if isbn else 'Unknown'
+                info['Year'] = year.group(1) if year else 'Unknown'
+                info['Publisher'] = publisher.group(1) if publisher else 'Unknown'
+                info['Author'] = author.group(1) if author else 'Unknown'
+                
+                
+                
+                
+                
+                
                     
         except Exception as e:
             self.label.setText(f"Erro ao processar o PDF: {e}")
 
         return info
+    
+                # Segunda Parte: Abordagem mais genérica
+                # for i in itertools.chain(range(min(3, total_pages)), range(-2, 0, 1)):  # 5 primeiras e 3 últimas páginas
+                #    page = reader.pages[i]
+                #    text = page.extract_text()
+                #    # Busca por autor
+                #    if info['Author'] == 'Unknown':
+                #        author_match = re.search(r'(?:[Aa]uthor|Written\sby|By)[:\s]*([^\n\r]+)', text)
+                #        if author_match:
+                #            info['Author'] = author_match.group(1).strip()
+
+                # Terceira Parte: busca por dados no próprio arquivo (similar ao que foi feito anteriormente)
+                # metadata = reader.getDocumentInfo()
+                # if metadata:
+                #    info['Title'] = metadata.get('/Title', info['Title'])
+                #    info['Author'] = metadata.get('/Author', info['Author'])
+                #    info['Year'] = metadata.get('/CreationDate', info['Year'])[:4]
+                #    info['Publisher'] = metadata.get('/Producer', info['Publisher'])
 
     def extract_info_from_epub(self, epub_path):
         book = epub.read_epub(epub_path)
